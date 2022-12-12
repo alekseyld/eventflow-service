@@ -1,0 +1,40 @@
+name: Frontend testing
+
+on:
+  push:
+    branches: [ $default-branch ]
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches: [ $default-branch ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: Set up NodeJS environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install package dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      # Run test cases and this could ensure minimum coverage as well if set
+      - name: Execute test cases
+        working-directory: ./frontend
+        run: npm run test:ci
+
+      - name: Create test build
+        working-directory: ./frontend
+        run: CI=false && npm run build
+
+
