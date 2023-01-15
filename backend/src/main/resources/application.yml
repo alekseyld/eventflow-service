@@ -1,10 +1,13 @@
 spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            clientId: ${GOOGLE_CLIENT_ID}
-            clientSecret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          google:
+#            clientId: ${GOOGLE_CLIENT_ID}
+#            clientSecret: ${GOOGLE_CLIENT_SECRET}
+#            scope:
+#              - email
+
+redash:
+  basic-auth-token: ${REDASH_BASIC_AUTH_TOKEN}
