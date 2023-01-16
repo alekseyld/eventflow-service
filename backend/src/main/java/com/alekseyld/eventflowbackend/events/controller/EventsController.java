@@ -1,6 +1,7 @@
 package com.alekseyld.eventflowbackend.events.controller;
 
 import com.alekseyld.eventflowbackend.events.domain.service.EventsService;
+import com.alekseyld.eventflowbackend.events.model.LatestEventsResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +16,7 @@ public class EventsController {
     private EventsService eventsService;
 
     @GetMapping("/latest")
-    public String getLatestEvents(
+    public LatestEventsResponse getLatestEvents(
             @RequestParam("last_fetch_time")
             long lastFetchTime,
             @RequestParam("client_id")

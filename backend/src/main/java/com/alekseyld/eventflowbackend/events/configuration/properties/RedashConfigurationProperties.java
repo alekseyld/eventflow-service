@@ -12,4 +12,19 @@ public class RedashConfigurationProperties {
 
     @NonNull
     private String basicAuthToken;
+
+    @NonNull
+    private String sessionCookie;
+
+    @NonNull
+    private String eventFetchUrl;
+
+    @NonNull
+    private String jobGetUrl;
+
+    @NonNull
+    private String eventSqlQuery;
+
+    @NonNull
+    private String eventSqlTable;
 }

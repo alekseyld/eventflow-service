@@ -1,4 +1,4 @@
-spring:
+#spring:
 #  security:
 #    oauth2:
 #      client:
@@ -9,5 +9,21 @@ spring:
 #            scope:
 #              - email
 
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          client:
+            RestTemplate: ${LOGGING_LEVEL}
+    com:
+      alekseyld:
+        eventflowbackend: ${LOGGING_LEVEL}
+
 redash:
   basic-auth-token: ${REDASH_BASIC_AUTH_TOKEN}
+  session-cookie: ${REDASH_SESSION_COOKIE}
+  event-fetch-url: ${REDASH_EVENT_URL}
+  job-get-url: ${REDASH_JOB_GET_URL}
+  event-sql-query: ${REDASH_EVENT_SQL}
+  event-sql-table: ${REDASH_EVENT_SQL_TABLE}
