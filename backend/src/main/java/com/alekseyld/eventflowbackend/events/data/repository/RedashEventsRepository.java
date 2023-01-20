@@ -116,6 +116,7 @@ public class RedashEventsRepository {
             var body = jobResult.getBody();
             if (body != null && body.job() != null) {
                 if (body.job().status() == STATUS_ERROR) {
+                    log.debug("listenForQueryResultId with error");
                     break;
                 }
 
@@ -179,7 +180,7 @@ public class RedashEventsRepository {
         if (lastFetchTime == 0) {
             return new Date(endDate.getTime() - 5 * 60 * 1000);
         } else {
-            return new Date(endDate.getTime() - lastFetchTime);
+            return new Date(lastFetchTime);
         }
     }
 }
