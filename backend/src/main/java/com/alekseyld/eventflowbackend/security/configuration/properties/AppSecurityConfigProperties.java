@@ -13,8 +13,10 @@ import java.util.List;
 public class AppSecurityConfigProperties {
 
     private List<String> authorizedRedirectUris = new ArrayList<>();
-
     private long tokenExpirationMsec;
 
     private String tokenSecret;
+
+    private boolean enableAuth;
+    private boolean disableAuth;
 }
