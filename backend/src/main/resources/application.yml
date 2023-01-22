@@ -1,3 +1,14 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+
 redash:
   basic-auth-token: ${REDASH_BASIC_AUTH_TOKEN}
   session-cookie: ${REDASH_SESSION_COOKIE}
@@ -33,12 +44,3 @@ spring:
   config:
     activate:
       on-profile: prod
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            clientId: ${GOOGLE_CLIENT_ID}
-            clientSecret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email

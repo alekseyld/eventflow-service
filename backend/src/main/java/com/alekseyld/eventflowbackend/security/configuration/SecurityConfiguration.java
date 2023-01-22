@@ -1,21 +1,22 @@
 package com.alekseyld.eventflowbackend.security.configuration;
 
+import com.alekseyld.eventflowbackend.security.RestAuthenticationEntryPoint;
 import com.alekseyld.eventflowbackend.security.configuration.properties.AppSecurityConfigProperties;
 import com.alekseyld.eventflowbackend.security.configuration.properties.JwtConfigProperties;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.alekseyld.eventflowbackend.security.filter.TokenAuthenticationFilter;
+import com.alekseyld.eventflowbackend.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.alekseyld.eventflowbackend.security.oauth2.OAuth2AuthenticationFailureHandler;
+import com.alekseyld.eventflowbackend.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.alekseyld.eventflowbackend.security.oauth2.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -26,7 +27,26 @@ import org.springframework.web.filter.CorsFilter;
 @EnableConfigurationProperties({JwtConfigProperties.class, AppSecurityConfigProperties.class})
 public class SecurityConfiguration {
 
-    private final JwtConfigProperties jwtProps;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+
+    private final TokenProvider tokenProvider;
+
+    @Bean
+    public TokenAuthenticationFilter tokenAuthenticationFilter() {
+        return new TokenAuthenticationFilter(tokenProvider);
+    }
+
+    /**
+    * By default, Spring OAuth2 uses HttpSessionOAuth2AuthorizationRequestRepository to save
+    * the authorization request. But, since our service is stateless, we can't save it in
+    * the session. We'll save the request in a Base64 encoded cookie instead.
+    */
+    @Bean
+    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,36 +56,37 @@ public class SecurityConfiguration {
         // Set session management to stateless
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+        http.formLogin().disable().httpBasic().disable();
+
+        http.exceptionHandling().authenticationEntryPoint(new RestAuthenticationEntryPoint());
+
         // Set permissions on endpoints
         http.authorizeRequests()
                 // Our public endpoints
                 .antMatchers("/api/public/**")
                 .permitAll()
+                .antMatchers("/auth/**", "/oauth2/**", "/login/oauth2/code/**")
+                .permitAll()
                 // Our private endpoints
                 .anyRequest()
                 .authenticated()
-                // Set up oauth2 resource server
                 .and()
-                .httpBasic(Customizer.withDefaults())
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+                .oauth2Login()
+                .authorizationEndpoint()
+                .baseUri("/oauth2/authorize")
+                .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                .and()
+                .redirectionEndpoint()
+//                .baseUri("/oauth2/callback/*")
+                .baseUri("/login/oauth2/code/*")
+                .and()
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler);
+
+        // Add our custom Token based authentication filter
+        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    // Used by JwtAuthenticationProvider to generate JWT tokens
-    @Bean
-    public JwtEncoder jwtEncoder() {
-        var jwk = new RSAKey.Builder(jwtProps.getRsaPublicKey())
-                .privateKey(jwtProps.getRsaPrivateKey())
-                .build();
-        var jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-        return new NimbusJwtEncoder(jwks);
-    }
-
-    // Used by JwtAuthenticationProvider to decode and validate JWT tokens
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(jwtProps.getRsaPublicKey()).build();
     }
 
     // Used by Spring Security if CORS is enabled.
