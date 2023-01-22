@@ -7,6 +7,16 @@ redash:
   event-sql-query: ${REDASH_EVENT_SQL}
   event-sql-table: ${REDASH_EVENT_SQL_TABLE}
 
+jwt:
+  rsa-public-key: classpath:rsa.public.key
+  rsa-private-key: classpath:rsa.private.key
+
+app-security:
+  tokenSecret: ${JWT_TOKEN_SECRET}
+  tokenExpirationMsec: 864000000
+  authorizedRedirectUris:
+    - http://localhost:3000/oauth2/redirect
+
 ---
 
 spring:
