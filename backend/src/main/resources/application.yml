@@ -1,0 +1,49 @@
+redash:
+  basic-auth-token: ${REDASH_BASIC_AUTH_TOKEN}
+  session-cookie: ${REDASH_SESSION_COOKIE}
+  event-fetch-url: ${REDASH_EVENT_URL}
+  job-get-url: ${REDASH_JOB_GET_URL}
+  event-sql-query: ${REDASH_EVENT_SQL}
+  event-sql-table: ${REDASH_EVENT_SQL_TABLE}
+
+app-security:
+  tokenSecret: ${JWT_TOKEN_SECRET}
+  tokenExpirationMsec: 864000000
+  authorizedRedirectUris:
+    - http://localhost:3000/oauth2/redirect
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    org.springframework.web.client.RestTemplate: DEBUG
+    com.alekseyld.eventflowbackend: DEBUG
+
+app-security:
+  enable-auth: false
+  disable-auth: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+
+app-security:
+  disable-auth: false
+  enable-auth: true
