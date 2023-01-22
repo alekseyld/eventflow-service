@@ -1,4 +1,3 @@
-
 redash:
   basic-auth-token: ${REDASH_BASIC_AUTH_TOKEN}
   session-cookie: ${REDASH_SESSION_COOKIE}
